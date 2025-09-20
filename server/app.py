@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 from flask_migrate import Migrate
 
@@ -20,10 +20,7 @@ db.init_app(app)
 @app.route('/messages', methods=['GET'])
 def get_messages():
     messages = Message.query.order_by(Message.created_at.asc()).all()
-    return jsonify([m.to_dict() if hasattr(m, 'to_dict') else m.to_dict() for m in messages]
-                   if not hasattr(Message, 'to_dict') else [m.to_dict() for m in messages])
-    # If you’re using SerializerMixin, you can just do:
-    # return jsonify([m.to_dict() for m in messages])
+    return jsonify([m.to_dict() for m in messages])
 
 
 # POST /messages – create new message
@@ -41,31 +38,33 @@ def create_message():
     db.session.add(new_message)
     db.session.commit()
 
-    return jsonify(new_message.to_dict() if hasattr(new_message, 'to_dict') else new_message.to_dict()), 201
+    return jsonify(new_message.to_dict()), 201
 
 
 # PATCH /messages/<id> – update body
 @app.route('/messages/<int:id>', methods=['PATCH'])
 def update_message(id):
-    message = Message.query.get_or_404(id)
-    data = request.get_json()
+    message = db.session.get(Message, id)  # new API
+    if message is None:
+        abort(404)
 
+    data = request.get_json()
     if 'body' in data:
         message.body = data['body']
 
     db.session.commit()
-
-    return jsonify(message.to_dict() if hasattr(message, 'to_dict') else message.to_dict())
+    return jsonify(message.to_dict())
 
 
 # DELETE /messages/<id>
 @app.route('/messages/<int:id>', methods=['DELETE'])
 def delete_message(id):
-    message = Message.query.get_or_404(id)
+    message = db.session.get(Message, id)  # new API
+    if message is None:
+        abort(404)
 
     db.session.delete(message)
     db.session.commit()
-
     return '', 204
 
 
