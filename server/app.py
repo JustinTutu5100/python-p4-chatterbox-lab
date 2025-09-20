@@ -1,8 +1,9 @@
+# app.py
 from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 from flask_migrate import Migrate
 
-from models import db, Message  # import from your models.py
+from models import db, Message
 
 app = Flask(__name__)
 
@@ -14,6 +15,10 @@ app.json.compact = False
 CORS(app)
 migrate = Migrate(app, db)
 db.init_app(app)
+
+# ✅ ensure tables exist for tests and local dev
+with app.app_context():
+    db.create_all()
 
 
 # GET /messages – all messages ordered by created_at asc
@@ -34,7 +39,6 @@ def create_message():
         body=data['body'],
         username=data['username']
     )
-
     db.session.add(new_message)
     db.session.commit()
 
@@ -44,7 +48,7 @@ def create_message():
 # PATCH /messages/<id> – update body
 @app.route('/messages/<int:id>', methods=['PATCH'])
 def update_message(id):
-    message = db.session.get(Message, id)  # new API
+    message = db.session.get(Message, id)
     if message is None:
         abort(404)
 
@@ -59,7 +63,7 @@ def update_message(id):
 # DELETE /messages/<id>
 @app.route('/messages/<int:id>', methods=['DELETE'])
 def delete_message(id):
-    message = db.session.get(Message, id)  # new API
+    message = db.session.get(Message, id)
     if message is None:
         abort(404)
 
