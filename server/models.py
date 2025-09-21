@@ -10,18 +10,18 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
-
-    # Default timestamps
     created_at = db.Column(
         db.DateTime,
         default=datetime.utcnow,
-        server_default=func.now()
+        server_default=func.now(),
+        nullable=False
     )
     updated_at = db.Column(
         db.DateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
-        server_default=func.now()
+        server_default=func.now(),
+        nullable=False
     )
 
     def to_dict(self):
@@ -29,6 +29,6 @@ class Message(db.Model):
             "id": self.id,
             "body": self.body,
             "username": self.username,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }
