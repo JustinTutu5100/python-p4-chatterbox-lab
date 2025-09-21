@@ -1,4 +1,3 @@
-# models.py
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 from datetime import datetime
@@ -12,7 +11,7 @@ class Message(db.Model):
     body = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
 
-    # ✅ Give both server_default and Python default so tests pass
+    # Default timestamps
     created_at = db.Column(
         db.DateTime,
         default=datetime.utcnow,
